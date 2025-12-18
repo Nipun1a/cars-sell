@@ -1,9 +1,18 @@
 import React from 'react'
+import Login from './components/auth/login'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 const App = () => {
   return (
     <div>
-      <h1 className='text-2xl' > cars selling website </h1>
+      
+      <BrowserRouter>
+      
+      <Routes>
+        <Route path='/login' element={<Login />} />
+        
+      </Routes>
+      </BrowserRouter>
     </div>
   )
 }
