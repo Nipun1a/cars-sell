@@ -1,16 +1,44 @@
 import React, { useState } from "react";
 import logo from "../../assets/logo.png";
 import car2 from "../../assets/car2.jpg";
+import api from "../../api/axios";
+import { useNavigate } from "react-router-dom";
+
 
 import TextInput from "./TextInput";
 import EmailInput from "./EmailInput";
 import PasswordInput from "./PasswordInput";
 import Button from "./Button";
 
-const register = () => {
+const Register = () => {
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const handleregister = async () => {
+    try{
+      const response = await api.post("auth/register",{
+        username,
+        email,
+        password,
+      });
+
+      console.log("Registration Succesfull:", response.data);
+      
+
+      //Save the user to the LoacalStorage
+
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      alert("Registration Succesfull");
+      navigate("/login");
+    }catch(error){
+      console.error("Registration failed:", error)
+      alert("Registration failed. Please try again");
+    }
+      
+    };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
@@ -80,7 +108,7 @@ const register = () => {
           <div className="w-full  
                 px-6 sm:px-6 py-10 sm:py-12 
                 flex items-center justify-center">
-            <Button type="submit" className="w-full">
+            <Button onClick={handleregister} type="submit" className="w-full">
               Create Account
             </Button>
           </div>
@@ -111,4 +139,4 @@ const register = () => {
   );
 };
 
-export default register;
+export default Register;

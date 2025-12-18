@@ -1,14 +1,42 @@
 import React, { useState } from "react";
 import logo from "../../assets/logo.png";
 import car1 from "../../assets/car1.jpg";
+import api from "../../api/axios";
+import { useNavigate } from "react-router-dom";
 
-import TextInput from "./TextInput";
+
+import EmailInput from "./EmailInput";
 import PasswordInput from "./PasswordInput";
 import Button from "./Button";
 
 const Login = () => {
-  const [username, setUsername] = useState("");
+  const [email , setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  const handlelogin = async () =>{
+    try{
+      const response = await api.post("/auth/login",{
+        email,
+        password,
+      });
+
+      console.log("Login Succesfull:", response.data);
+      
+      // save user data to the local Storage
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      alert("login Succesfull");
+      navigate("/")
+    }catch(error){
+      console.error("Login failed:", error);
+      alert("Invalid email or password.");
+    }
+
+  }
+
+
+
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
@@ -44,16 +72,16 @@ const Login = () => {
             Enter your credentials to access your account
           </p>
 
-          {/* Username */}
+          {/* Email */}
           <div className="w-full  
                 px-6 sm:px-5 py-10 sm:py-12 
                 flex items-center justify-center">
-          <TextInput
-            label="Username"
-            name="username"
-            placeholder="Enter your username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+          <EmailInput
+            label="Email"
+            name="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
           </div>
 
@@ -74,7 +102,7 @@ const Login = () => {
           <div className="w-full  
                 px-6 sm:px-6 py-10 sm:py-12 
                 flex items-center justify-center">
-            <Button type="submit" className="w-full">
+            <Button onClick = {handlelogin}type="submit" className="w-full">
               Login
             </Button>
           </div>
