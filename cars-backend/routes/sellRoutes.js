@@ -1,44 +1,44 @@
 const express = require("express");
 const router = express.Router();
 const Sell = require("../models/sell");
+const multer = require("multer");
+const path = require("path");
 
-// Create selling page (Add car for sale)
-router.post("/sell", async (req, res) => {
+// multer config
+const storage = multer.diskStorage({
+  destination: "uploads/",
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage });
+
+// POST /api/sell
+router.post("/", upload.array("photos", 5), async (req, res) => {
   try {
-    const { car_name, model, price, photos, description } = req.body;
+    const { car_name, model, price, description } = req.body;
 
-    // Validation
-    if (!car_name || !model || !price || !photos) {
-      return res.status(400).json({
-        success: false,
-        message: "All required fields must be filled",
-      });
+    if (!car_name || !model || !price || !req.files.length) {
+      return res.status(400).json({ message: "Missing fields" });
     }
 
-    // Create new sell entry
-    const newSell = new Sell({
+    const photos = req.files.map(f => f.path);
+
+    const car = new Sell({
       car_name,
       model,
       price,
-      photos,
       description,
+      photos,
     });
 
-    await newSell.save();
+    await car.save();
 
-    // Success response
-    return res.status(201).json({
-      success: true,
-      message: "Car listed for sale successfully",
-      data: newSell,
-    });
-
-  } catch (error) {
-    console.error("Error saving selling form:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error while saving car details",
-    });
+    res.status(201).json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 

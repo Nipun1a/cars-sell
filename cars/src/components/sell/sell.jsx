@@ -19,7 +19,7 @@ const Sell = () => {
   };
 
   const handleImageChange = (e) => {
-    setImages([...e.target.files]);
+    setImages(Array.from(e.target.files));
   };
 
   const handleSubmit = async (e) => {
@@ -32,31 +32,25 @@ const Sell = () => {
       data.append("price", formData.price);
       data.append("description", formData.description);
 
-      images.forEach((img) => {
-        data.append("photos", img);
-      });
+      images.forEach((img) => data.append("photos", img));
 
-      await axios.post("/api/sell", data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      await axios.post(
+        "http://localhost:3000/api/sell",
+        data
+      );
 
-      setMessage("✅ Car listed successfully!");
+      setMessage("✅ Car listed successfully");
       setShowForm(false);
-      setFormData({
-        car_name: "",
-        model: "",
-        price: "",
-        description: "",
-      });
+      setFormData({ car_name: "", model: "", price: "", description: "" });
       setImages([]);
-
-      setTimeout(() => setMessage(""), 3000);
-    } catch (error) {
-      setMessage("❌ Failed to submit. Try again.");
-      setTimeout(() => setMessage(""), 3000);
-      console.error("failed to submit form" , error);
+    } catch (err) {
+      console.error(err);
+      setMessage("❌ Failed to submit");
     }
+
+    setTimeout(() => setMessage(""), 3000);
   };
+
 
   return (
     <div>
