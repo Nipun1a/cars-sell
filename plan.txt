@@ -11,3 +11,4 @@ if has more time
 deployment 
 8 remove the error 
 9 make this ready for the deployment
+do all things
