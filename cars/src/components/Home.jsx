@@ -58,12 +58,16 @@ const Home = () => {
 
       {/* Buttons */}
       <div className="flex gap-4">
-        <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold shadow-lg">
+        <a href="/predict" >
+        <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold shadow-lg"  >
           Predict Price
         </button>
+        </a>
+        <a href="/buy">
         <button className="px-6 py-3 border border-white/30 rounded-lg hover:bg-white/10 transition">
           Browse Cars
         </button>
+        </a>
       </div>
 
       {/* Social Proof */}

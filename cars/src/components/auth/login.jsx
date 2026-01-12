@@ -4,91 +4,75 @@ import car1 from "../../assets/car1.jpg";
 import api from "../../api/axios";
 import { useNavigate } from "react-router-dom";
 
-
 import EmailInput from "./EmailInput";
 import PasswordInput from "./PasswordInput";
 import Button from "./Button";
 
 const Login = () => {
-  const [email , setEmail] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handlelogin = async () =>{
-    try{
-      const response = await api.post("/auth/login",{
+  const handleLogin = async () => {
+    try {
+      const response = await api.post("/auth/login", {
         email,
         password,
       });
 
-      console.log("Login Succesfull:", response.data);
-      
-      // save user data to the local Storage
       localStorage.setItem("user", JSON.stringify(response.data.user));
-      alert("login Succesfull");
-      navigate("/")
-    }catch(error){
-      console.error("Login failed:", error);
-      alert("Invalid email or password.");
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+      alert("Invalid email or password");
     }
-
-  }
-
-
-
-
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-[#020617] to-[#020617] px-4">
       
-      {/* Card */}
-      <div className="flex w-full max-w-1152px h-600px bg-white rounded-2xl shadow-lg overflow-hidden">
-        
+      {/* Glass Card */}
+      <div className="relative flex w-full max-w-5xl rounded-2xl overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.7)]">
+
         {/* Left Image */}
-        <div className="hidden md:block md:w-1/2">
+        <div className="hidden md:block w-1/2 relative">
           <img
             src={car1}
-            alt="Cars"
-            className="w-full h-full object-cover"
+            alt="Car"
+            className="w-full h-full object-cover opacity-80"
           />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent" />
         </div>
 
         {/* Right Form */}
-        <div className="w-full md:w-1/2 px-10 py-12 flex flex-col justify-center align-middle">
-          
+        <div className="w-full md:w-1/2 px-10 py-14 flex flex-col justify-center">
+
           {/* Logo */}
           <img
             src={logo}
-            alt="Logo"
+            alt="CarLo"
             className="w-10 h-10 mx-auto mb-4"
           />
 
           {/* Heading */}
-          <h1 className="text-3xl font-bold mt-1 mb- text-center">
+          <h1 className="text-3xl font-bold text-white text-center">
             Welcome Back
           </h1>
 
-          <p className="text-gray-600 mt-2 mb-10 text-center">
-            Enter your credentials to access your account
+          <p className="text-[#94A3B8] text-center mt-2 mb-10">
+            Sign in to continue to CarLo
           </p>
 
-          {/* Email */}
-          <div className="w-full  
-                px-6 sm:px-5 py-10 sm:py-12 
-                flex items-center justify-center">
-          <EmailInput
-            label="Email"
-            name="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          </div>
+          {/* Form */}
+          <div className="flex flex-col gap-6 items-center">
+            <EmailInput
+              label="Email"
+              name="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
-          {/* Password */}
-          <div className="w-full  
-                px-4 sm:px-10 py-10 sm:py-12 
-                flex items-center justify-center">
             <PasswordInput
               label="Password"
               name="password"
@@ -96,26 +80,21 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-          </div>
 
-          {/* Login Button */}
-          <div className="w-full  
-                px-6 sm:px-6 py-10 sm:py-12 
-                flex items-center justify-center">
-            <Button onClick = {handlelogin}type="submit" className="w-full">
+            <Button onClick={handleLogin}>
               Login
             </Button>
           </div>
 
           {/* Footer */}
-          <p className="text-sm text-center mt-6 ">
+          <p className="text-sm text-center mt-8 text-[#94A3B8]">
             Don’t have an account?{" "}
-            <span className="text-blue-500 cursor-pointer font-medium hover:underline">
-              <a href="/Register">
-                Register
-              </a>
-            
-            </span>
+            <a
+              href="/register"
+              className="text-[#38B9FA] font-medium hover:underline"
+            >
+              Register
+            </a>
           </p>
 
         </div>

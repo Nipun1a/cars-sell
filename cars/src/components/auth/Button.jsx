@@ -12,26 +12,26 @@ const Button = ({
       disabled={disabled}
       onClick={onClick}
       className="
-        absolute top-380px left-24px
-        w-[336px] h-40px
-        px-3
+        relative
+        w-[340px] h-[48px]
         flex items-center justify-center
+        rounded-xl
         font-inter
-        text-sm leading-[22px] font-semibold
-        text-[#19191F]
-        bg-[#38B9FA]
-        opacity-100
-        rounded-6px
-        border-0
-        shadow-0px_0px_0px_#00000000,_0px_2px_4px_#38B9FA80
+        text-[15px] font-semibold
+        text-white
 
-        hover:text-[#19191F]
-        hover:bg-[#38B9FA]
+        bg-gradient-to-r from-[#2F80ED] to-[#38B9FA]
+        shadow-[0_8px_30px_rgba(56,185,250,0.35)]
 
-        active:text-[#19191F]
-        active:bg-[#38B9FA]
+        transition-all duration-300 ease-out
+        hover:scale-[1.03]
+        hover:shadow-[0_12px_40px_rgba(56,185,250,0.55)]
+
+        active:scale-[0.97]
 
         disabled:opacity-40
+        disabled:cursor-not-allowed
+        cursor-pointer
       "
     >
       {children}

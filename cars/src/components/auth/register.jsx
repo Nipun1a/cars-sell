@@ -4,7 +4,6 @@ import car2 from "../../assets/car2.jpg";
 import api from "../../api/axios";
 import { useNavigate } from "react-router-dom";
 
-
 import TextInput from "./TextInput";
 import EmailInput from "./EmailInput";
 import PasswordInput from "./PasswordInput";
@@ -16,59 +15,49 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleregister = async () => {
-    try{
-      const response = await api.post("auth/register",{
+  const handleRegister = async () => {
+    try {
+      const response = await api.post("/auth/register", {
         username,
         email,
         password,
       });
 
-      console.log("Registration Succesfull:", response.data);
-      
-
-      //Save the user to the LoacalStorage
-
       localStorage.setItem("user", JSON.stringify(response.data.user));
-      alert("Registration Succesfull");
       navigate("/login");
-    }catch(error){
-      console.error("Registration failed:", error)
-      alert("Registration failed. Please try again");
+    } catch (error) {
+      console.log(error);
+      alert("Registration failed. Please try again.");
     }
-      
-    };
-  
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-[#020617] to-[#020617] px-4">
       
-      {/* Card */}
-      <div className="flex w-full max-w-1152px min-h-[600px] h- bg-white rounded-2xl shadow-lg overflow-hidden">
+      {/* Glass Card */}
+      <div className="relative flex w-full max-w-5xl rounded-2xl overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.7)]">
 
         {/* Left Form */}
-        <div className="w-full md:w-1/2 px-10 py-12 flex flex-col justify-center align-middle">
-          
+        <div className="w-full md:w-1/2 px-10 py-14 flex flex-col justify-center">
+
           {/* Logo */}
           <img
             src={logo}
-            alt="Logo"
-            className="w-10 h-10 mx-auto mt-0.5 mb-4"
+            alt="CarLo"
+            className="w-10 h-10 mx-auto mb-4"
           />
 
           {/* Heading */}
-          <h1 className="text-3xl font-bold  mb- text-center">
+          <h1 className="text-3xl font-bold text-white text-center">
             Create Account
           </h1>
 
-          <p className="text-gray-600 mt-2 mb-10 text-center">
-            Join us to buy and sell cars easily
+          <p className="text-[#94A3B8] text-center mt-2 mb-10">
+            Join CarLo to buy, sell & predict car prices
           </p>
 
-          {/* Username */}
-          <div className="w-full  
-                px-6 sm:px-5 py-10 sm:py-12 
-                flex items-center justify-center">
+          {/* Form */}
+          <div className="flex flex-col gap-6 items-center">
             <TextInput
               label="Username"
               name="username"
@@ -76,12 +65,7 @@ const Register = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
-          </div>
 
-          {/* Email */}
-          <div className="w-full  
-                px-6 sm:px-5 py-10 sm:py-12 
-                flex items-center justify-center">
             <EmailInput
               label="Email"
               name="email"
@@ -89,49 +73,41 @@ const Register = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-          </div>
 
-          {/* Password */}
-          <div className="w-full  
-                px-6 sm:px-5 py-10 sm:py-12 
-                flex items-center justify-center">
             <PasswordInput
               label="Password"
               name="password"
-              placeholder="Enter your password"
+              placeholder="Create a strong password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-          </div>
 
-          {/* Register Button */}
-          <div className="w-full  
-                px-6 sm:px-6 py-10 sm:py-12 
-                flex items-center justify-center">
-            <Button onClick={handleregister} type="submit" className="w-full">
+            <Button onClick={handleRegister}>
               Create Account
             </Button>
           </div>
 
           {/* Footer */}
-          <p className="text-sm text-center mt-6">
+          <p className="text-sm text-center mt-8 text-[#94A3B8]">
             Already have an account?{" "}
-            <span className="text-blue-500 cursor-pointer font-medium hover:underline">
-              <a href="/login">
-                Login
-              </a>
-            </span>
+            <a
+              href="/login"
+              className="text-[#38B9FA] font-medium hover:underline"
+            >
+              Login
+            </a>
           </p>
 
         </div>
 
         {/* Right Image */}
-        <div className="hidden md:block md:w-1/2">
+        <div className="hidden md:block w-1/2 relative">
           <img
             src={car2}
-            alt="Cars"
-            className="w-full h-full object-cover"
+            alt="Car"
+            className="w-full h-full object-cover opacity-80"
           />
+          <div className="absolute inset-0 bg-gradient-to-l from-black/80 to-transparent" />
         </div>
 
       </div>

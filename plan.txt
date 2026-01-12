@@ -1,12 +1,13 @@
-1. imporve the ui/ux of login and the signup form 
-2. apply the logo on the favicon
-3. apply the navbar on the predict page
-4. make the working of the button of the hero section
-5. predict price  details store in the database 
+1. imporve the ui/ux of login and the signup form /done
+2. apply the logo on the favicon /done
+3. apply the navbar on the predict page /done
+4. make the working of the button of the hero section / done
+ 
 
 if has more time 
 6. imporve the model 
 7. the sell car should show in the buy options 
+5. predict price  details store in the database
 
 deployment 
 8 remove the error 

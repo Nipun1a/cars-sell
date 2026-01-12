@@ -11,11 +11,11 @@ const PasswordInput = ({
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="absolute top-288px left-24px opacity-100">
+    <div className="relative w-[340px]">
       {label && (
         <label
           htmlFor={name}
-          className="block mb-1 font-inter text-sm leading-[22px] font-medium"
+          className="mb-2 block text-sm font-medium text-[#AAB2C8]"
         >
           {label}
         </label>
@@ -31,46 +31,43 @@ const PasswordInput = ({
           onChange={onChange}
           disabled={disabled}
           className="
-            w-[336px]
-            h-[49px]
-            px-3
-            pr-10
-            font-inter
-            text-sm
-            leading-[22px]
-            font-normal
-            bg-white
-            rounded-6px
-            border
-            border-[#DEE1E6]
+            w-full h-[50px]
+            px-4 pr-12
+            rounded-xl
+            bg-[#0F172A]
+            text-white
+            placeholder:text-[#6B7280]
+
+            border border-[#1E293B]
             outline-none
 
-            hover:text-[#565D6D]
-            hover:bg-white
-            hover:border-[#DEE1E6]
+            transition-all duration-300 ease-out
 
-            focus:text-[#565D6D]
-            focus:bg-white
-            focus:border-[#DEE1E6]
+            focus:border-[#38B9FA]
+            focus:shadow-[0_0_0_3px_rgba(56,185,250,0.25)]
 
-            disabled:text-[#565D6D]
-            disabled:bg-white
-            disabled:border-[#DEE1E6]
+            hover:border-[#2F80ED]
+
+            disabled:opacity-40
+            disabled:cursor-not-allowed
           "
         />
 
-        {/* Toggle Icon */}
+        {/* Show / Hide Password */}
         <button
           type="button"
           disabled={disabled}
           onClick={() => setShowPassword(!showPassword)}
           className="
-            absolute right-3 top-1/2 -translate-y-1/2
-            text-[#565D6D]
-            disabled:text-[#565D6D]
+            absolute right-4 top-1/2 -translate-y-1/2
+            text-[#6B7280]
+            hover:text-[#38B9FA]
+            transition-colors
+            disabled:opacity-40
+            cursor-pointer
           "
         >
-          {showPassword ? "🙈" : "👁️"}
+          {showPassword ? "Hide" : "Show"}
         </button>
       </div>
     </div>
