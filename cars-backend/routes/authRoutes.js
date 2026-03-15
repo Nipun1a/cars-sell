@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const authMiddleware = require("../middleware/auth");
 
 // =======================
 // User Registration
@@ -43,10 +44,11 @@ router.post("/register", async (req, res) => {
     );
 
     // Set cookie
+    const isProd = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict", // change to 'none' when frontend is deployed
+      secure: isProd,
+      sameSite: isProd ? "none" : "strict",
       maxAge: 60 * 60 * 1000,
     });
 
@@ -95,10 +97,11 @@ router.post("/login", async (req, res) => {
       { expiresIn: "1h" }
     );
 
+    const isProd = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: isProd,
+      sameSite: isProd ? "none" : "strict",
       maxAge: 60 * 60 * 1000,
     });
 
@@ -120,13 +123,30 @@ router.post("/login", async (req, res) => {
 // User Logout
 // =======================
 router.post("/logout", (req, res) => {
+  const isProd = process.env.NODE_ENV === "production";
   res.clearCookie("token", {
     httpOnly: true,
-    sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: isProd ? "none" : "strict",
+    secure: isProd,
   });
 
   res.json({ message: "Logged out successfully" });
+});
+
+// =======================
+// Get Current User
+// =======================
+router.get("/me", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ user });
+  } catch (error) {
+    console.error("Me error:", error);
+    res.status(500).json({ message: "Failed to fetch user" });
+  }
 });
 
 module.exports = router;

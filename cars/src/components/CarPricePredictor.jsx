@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 
 const CarPricePredictor = () => {
+  const mlBaseUrl = import.meta.env.VITE_ML_URL || "http://127.0.0.1:5000";
   const [formData, setFormData] = useState({
     present_price: "",
     kms_driven: "",
@@ -25,7 +26,7 @@ const CarPricePredictor = () => {
     setPrice(null);
 
     try {
-      const res = await fetch("http://127.0.0.1:5000/predict-price", {
+      const res = await fetch(`${mlBaseUrl}/predict-price`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -42,7 +43,8 @@ const CarPricePredictor = () => {
 
       const data = await res.json();
       setPrice(data.predicted_price);
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       alert("Prediction failed. Check backend.");
     } finally {
       setLoading(false);
