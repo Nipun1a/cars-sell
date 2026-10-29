@@ -1,126 +1,264 @@
-import React, { useState } from "react";
-import Navbar from "../components/Navbar";
-
-const CarPricePredictor = () => {
-  const mlBaseUrl = import.meta.env.VITE_ML_URL || "http://127.0.0.1:5000";
-  const [formData, setFormData] = useState({
-    present_price: "",
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import api, { apiError, money } from "../api/axios";
+import { useAuth } from "../auth";
+export default function CarPricePredictor() {
+  const { user, loading } = useAuth();
+  const [options, setOptions] = useState(null);
+  const [form, setForm] = useState({
+    name: "",
+    year: "",
     kms_driven: "",
-    fuel_type: "0",
-    seller_type: "0",
-    transmission: "0",
-    owner: "0",
-    car_age: ""
+    fuel_type: "Petrol",
+    seller_type: "Individual",
+    transmission: "Manual",
+    owner: "First Owner",
+    mileage: "",
+    engine: "",
+    max_power: "",
+    seats: "",
   });
-
-  const [price, setPrice] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handlePredict = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setPrice(null);
-
-    try {
-      const res = await fetch(`${mlBaseUrl}/predict-price`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          present_price: Number(formData.present_price),
-          kms_driven: Number(formData.kms_driven),
-          car_age: Number(formData.car_age),
-          fuel_type: Number(formData.fuel_type),
-          seller_type: Number(formData.seller_type),
-          transmission: Number(formData.transmission),
-          owner: Number(formData.owner)
-        })
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState(null);
+  const [retry, setRetry] = useState(0);
+  useEffect(() => {
+    let active = true;
+    api
+      .get("/valuation-options")
+      .then(({ data }) => {
+        if (active) {
+          setOptions(data);
+          setError("");
+        }
+      })
+      .catch((err) => {
+        if (active) setError(apiError(err));
       });
-
-      const data = await res.json();
-      setPrice(data.predicted_price);
-    } catch (error) {
-      console.error(error);
-      alert("Prediction failed. Check backend.");
+    return () => {
+      active = false;
+    };
+  }, [retry]);
+  function change(event) {
+    setForm({ ...form, [event.target.name]: event.target.value });
+    setResult(null);
+  }
+  async function submit(event) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    setResult(null);
+    try {
+      const { data } = await api.post("/predict-price", form);
+      setResult(data.valuation);
+    } catch (err) {
+      setError(apiError(err));
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
-  };
-
+  }
   return (
-    <div className="min-h-screen bg-gradient-to-r from-black via-[#0b1c3d] to-black text-white">
-      
-      {/* Navbar fixed at top */}
-      <Navbar user={JSON.parse(localStorage.getItem("user"))} />
-
-      {/* Page Content */}
-      <div className="pt-24 px-4 flex items-center justify-center">
-        <div className="w-full max-w-3xl bg-white/5 backdrop-blur-xl rounded-2xl p-8 shadow-xl border border-white/10">
-          
-          <h2 className="text-3xl font-bold mb-2">
-            AI <span className="text-blue-500">Car Price Prediction</span>
-          </h2>
-
-          <p className="text-gray-400 mb-6">
-            Enter car details to get an instant AI-powered price estimate.
-          </p>
-
-          <form onSubmit={handlePredict} className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            
-            <input type="number" name="present_price" placeholder="Current Showroom Price (₹ in Lakhs)"
-              value={formData.present_price} onChange={handleChange} required className="input" />
-
-            <input type="number" name="kms_driven" placeholder="Kilometers Driven"
-              value={formData.kms_driven} onChange={handleChange} required className="input" />
-
-            <select name="fuel_type" onChange={handleChange} className="input bg-black text-white">
-              <option value="0">Petrol</option>
-              <option value="1">Diesel</option>
-              <option value="2">CNG</option>
-            </select>
-
-            <select name="seller_type" onChange={handleChange} className="input bg-black text-white">
-              <option value="0">Dealer</option>
-              <option value="1">Individual</option>
-            </select>
-
-            <select name="transmission" onChange={handleChange} className="input bg-black text-white">
-              <option value="0">Manual</option>
-              <option value="1">Automatic</option>
-            </select>
-
-            <select name="owner" onChange={handleChange} className="input bg-black text-white">
-              <option value="0">First Owner</option>
-              <option value="1">Second Owner</option>
-              <option value="2">Third Owner or More</option>
-            </select>
-
-            <input type="number" name="car_age" placeholder="Car Age (years)"
-              value={formData.car_age} onChange={handleChange} required className="input md:col-span-2" />
-
-            <button type="submit"
-              className="md:col-span-2 bg-blue-600 hover:bg-blue-700 transition py-3 rounded-xl font-semibold text-lg">
-              {loading ? "Predicting..." : "Predict Price"}
-            </button>
-          </form>
-
-          {price !== null && (
-            <div className="mt-6 p-4 rounded-xl bg-blue-500/10 border border-blue-500/30 text-center">
-              <p className="text-lg text-gray-300">Estimated Selling Price</p>
-              <h3 className="text-3xl font-bold text-blue-400">
-                ₹ {price} Lakhs
-              </h3>
+    <section className="section">
+      <div className="page-heading">
+        <p className="eyebrow">KNOW YOUR CAR. KNOW YOUR NEXT MOVE.</p>
+        <h1>
+          A value.
+          <br />
+          <em>A new possibility.</em>
+        </h1>
+        <p>
+          A data-informed starting point for your selling journey, saved to your
+          personal garage.
+        </p>
+      </div>
+      <div className="valuation-layout">
+        <form className="form-panel" onSubmit={submit}>
+          <div className="panel-title">
+            <span className="step">01</span>
+            <div>
+              <h2>The details make the difference.</h2>
+              <p>Tell us a little about your car.</p>
+            </div>
+          </div>
+          {error && (
+            <div className="error" role="alert">
+              {error}
+              {!options && (
+                <button
+                  className="text-button"
+                  type="button"
+                  onClick={() => setRetry(retry + 1)}
+                >
+                  Try again
+                </button>
+              )}
             </div>
           )}
-
-        </div>
+          <div className="form-grid">
+            <label className="span-2">
+              Vehicle model
+              <input
+                list="vehicle-models"
+                name="name"
+                value={form.name}
+                onChange={change}
+                required
+                placeholder={
+                  options
+                    ? "Type to find your exact model"
+                    : "Loading supported models…"
+                }
+                disabled={!options}
+              />
+              <datalist id="vehicle-models">
+                {options?.models.map((name) => (
+                  <option key={name} value={name} />
+                ))}
+              </datalist>
+            </label>
+            <label>
+              Registration year
+              <input
+                type="number"
+                name="year"
+                min="1980"
+                max={new Date().getFullYear()}
+                value={form.year}
+                onChange={change}
+                required
+                placeholder="e.g. 2017"
+              />
+            </label>
+            <label>
+              Distance driven (km)
+              <input
+                type="number"
+                name="kms_driven"
+                min="0"
+                max="2000000"
+                value={form.kms_driven}
+                onChange={change}
+                required
+                placeholder="e.g. 45000"
+              />
+            </label>
+            {[
+              ["fuel_type", "Fuel type"],
+              ["transmission", "Transmission"],
+              ["owner", "Ownership"],
+              ["seller_type", "Seller type"],
+            ].map(([key, label]) => (
+              <label key={key}>
+                {label}
+                <select name={key} value={form[key]} onChange={change}>
+                  {(options?.categories[key] || [form[key]]).map((value) => (
+                    <option key={value}>{value}</option>
+                  ))}
+                </select>
+              </label>
+            ))}
+          </div>
+          <details className="specifications">
+            <summary>
+              Add vehicle specifications <span>Recommended +</span>
+            </summary>
+            <div className="form-grid">
+              {[
+                ["engine", "Engine (cc)", 300, 8000],
+                ["mileage", "Mileage (km/l or km/kg)", 1, 60],
+                ["max_power", "Power (bhp)", 10, 1500],
+                ["seats", "Seats", 2, 14],
+              ].map(([key, label, min, max]) => (
+                <label key={key}>
+                  {label}
+                  <input
+                    type="number"
+                    name={key}
+                    min={min}
+                    max={max}
+                    step={key === "seats" ? "1" : "any"}
+                    value={form[key]}
+                    onChange={change}
+                    placeholder="Optional"
+                  />
+                </label>
+              ))}
+            </div>
+          </details>
+          {user ? (
+            <button className="button full-width" disabled={busy || !options}>
+              {busy ? "Calculating & saving…" : "Discover my car’s value ↗"}
+            </button>
+          ) : (
+            <Link
+              className="button full-width"
+              to="/login"
+              state={{ from: "/predict" }}
+            >
+              {loading ? "Checking your account…" : "Sign in to value & save ↗"}
+            </Link>
+          )}
+          <p className="fine-print">
+            All estimates are in Indian rupees (INR). Successful valuations are
+            automatically saved to your account.
+          </p>
+        </form>
+        <aside className="valuation-aside" aria-live="polite">
+          {result ? (
+            <>
+              <p className="eyebrow">YOUR CAR, CONSIDERED</p>
+              <h2>{result.inputs.name}</h2>
+              <p className="result-price">{money(result.predicted_price)}</p>
+              <p>Estimated selling value</p>
+              <div className="price-range">
+                <small>INDICATIVE RANGE</small>
+                <strong>
+                  {money(result.price_range.lower)} –{" "}
+                  {money(result.price_range.upper)}
+                </strong>
+              </div>
+              <p className="saved-note">✓ Saved to your garage</p>
+              <Link className="underlink" to="/account">
+                View valuation history ↗
+              </Link>
+              {result.warnings.map((warning) => (
+                <p className="fine-print" key={warning}>
+                  {warning}
+                </p>
+              ))}
+            </>
+          ) : (
+            <>
+              <span className="outline-mark">C</span>
+              <p className="eyebrow">CLARITY BEFORE YOUR NEXT CHAPTER</p>
+              <h2>
+                Confidence begins
+                <br />
+                with understanding.
+              </h2>
+              <p>
+                Your estimate brings together vehicle age, mileage,
+                specifications and comparable historical listings.
+              </p>
+              <div className="aside-rule" />
+              <p className="fine-print">
+                The model uses a historical 2020 dataset. Estimates are
+                indicative and do not reflect live market changes, vehicle
+                condition or location. A physical appraisal is recommended
+                before a sale.
+              </p>
+              {options && (
+                <p className="fine-print">
+                  Held-out median percentage error:{" "}
+                  {options.test.median_absolute_percentage_error}%. This
+                  describes the historical test set, not a guarantee for your
+                  car.
+                </p>
+              )}
+            </>
+          )}
+        </aside>
       </div>
-    </div>
+    </section>
   );
-};
-
-export default CarPricePredictor;
+}

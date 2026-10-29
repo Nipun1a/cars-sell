@@ -1,19 +1,18 @@
 const jwt = require("jsonwebtoken");
-
-// Authentication middleware
-module.exports = function (req, res, next) {
+const User = require("../models/User");
+module.exports = async function auth(req, res, next) {
+  let decoded;
   try {
-    const token = req.cookies?.token;
-
-    if (!token) {
-      return res.status(401).json({ message: "Not logged in" });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded.user;
-
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: "Invalid or expired token" });
+    decoded = jwt.verify(req.cookies?.token || "", process.env.JWT_SECRET, {
+      algorithms: ["HS256"],
+    });
+  } catch {
+    return res.status(401).json({ message: "Please sign in to continue." });
   }
+  const user = await User.findById(decoded.sub);
+  if (!user || user.sessionVersion !== decoded.version) {
+    return res.status(401).json({ message: "Please sign in to continue." });
+  }
+  req.user = user;
+  next();
 };

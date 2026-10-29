@@ -1,190 +1,247 @@
-import React, { useState } from "react";
-import Navbar from "../Navbar";
-import axios from "axios";
-
-const Sell = () => {
-  const [showForm, setShowForm] = useState(false);
-  const [message, setMessage] = useState("");
-  const [images, setImages] = useState([]);
-
-  const [formData, setFormData] = useState({
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import api, { apiError } from "../../api/axios";
+export default function Sell() {
+  const [form, setForm] = useState({
     car_name: "",
     model: "",
     price: "",
+    kms_driven: "",
+    fuel_type: "Petrol",
+    transmission: "Manual",
+    city: "",
     description: "",
   });
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleImageChange = (e) => {
-    setImages(Array.from(e.target.files));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const [images, setImages] = useState([]);
+  const [previews, setPreviews] = useState([]);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [success, setSuccess] = useState(false);
+  useEffect(() => {
+    const urls = images.map((file) => URL.createObjectURL(file));
+    setPreviews(urls);
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
+  }, [images]);
+  function update(event) {
+    setForm({ ...form, [event.target.name]: event.target.value });
+  }
+  function photos(event) {
+    const files = Array.from(event.target.files);
+    if (
+      files.length > 5 ||
+      files.some(
+        (file) =>
+          file.size > 5 * 1024 * 1024 ||
+          !["image/jpeg", "image/png", "image/webp"].includes(file.type),
+      )
+    ) {
+      setError("Choose up to 5 JPG, PNG or WebP photos, each under 5 MB.");
+      event.target.value = "";
+      setImages([]);
+      return;
+    }
+    setImages(files);
+    setError("");
+  }
+  async function submit(event) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
     try {
       const data = new FormData();
-      data.append("car_name", formData.car_name);
-      data.append("model", formData.model);
-      data.append("price", formData.price);
-      data.append("description", formData.description);
-
-      images.forEach((img) => data.append("photos", img));
-
-      await axios.post(
-        "http://localhost:3000/api/sell",
-        data
-      );
-
-      setMessage("✅ Car listed successfully");
-      setShowForm(false);
-      setFormData({ car_name: "", model: "", price: "", description: "" });
-      setImages([]);
+      Object.entries(form).forEach(([key, value]) => data.append(key, value));
+      images.forEach((file) => data.append("photos", file));
+      await api.post("/sell", data);
+      setSuccess(true);
     } catch (err) {
-      console.error(err);
-      setMessage("❌ Failed to submit");
+      setError(apiError(err));
+    } finally {
+      setBusy(false);
     }
-
-    setTimeout(() => setMessage(""), 3000);
-  };
-
-
-  return (
-    <div>
-      <Navbar user={JSON.parse(localStorage.getItem("user"))} />
-
-      <section className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center px-6 text-white">
-
-        {!showForm && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-red-600 hover:bg-red-700 px-10 py-4 rounded-full text-lg font-semibold shadow-xl transition"
-          >
-            Sell Your Car
-          </button>
-        )}
-
-        {showForm && (
-          <div className="bg-gray-900/90 backdrop-blur-xl w-full max-w-2xl rounded-3xl shadow-2xl p-10">
-            <h2 className="text-3xl font-bold text-center mb-8">
-              Sell Your Car
-            </h2>
-
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-              {/* Car Name */}
-              <div>
-                <label className="text-sm text-gray-300">Car Name</label>
-                <input
-                  type="text"
-                  name="car_name"
-                  value={formData.car_name}
-                  onChange={handleChange}
-                  className="w-full mt-1 px-4 py-3 rounded-xl bg-gray-800 focus:ring-2 focus:ring-red-600 outline-none"
-                  required
-                />
-              </div>
-
-              {/* Model */}
-              <div>
-                <label className="text-sm text-gray-300">Model Year</label>
-                <input
-                  type="text"
-                  name="model"
-                  value={formData.model}
-                  onChange={handleChange}
-                  className="w-full mt-1 px-4 py-3 rounded-xl bg-gray-800 focus:ring-2 focus:ring-red-600 outline-none"
-                  required
-                />
-              </div>
-
-              {/* Price */}
-              <div>
-                <label className="text-sm text-gray-300">Price (₹)</label>
-                <input
-                  type="text"
-                  name="price"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  placeholder="e.g. 850000"
-                  value={formData.price}
-                  onChange={handleChange}
-                  className="w-full mt-1 px-4 py-3 rounded-xl bg-gray-800 focus:ring-2 focus:ring-red-600 outline-none"
-                  required
-                />
-              </div>
-
-              {/* Images */}
-              <div>
-                <label className="text-sm text-gray-300">Upload Images</label>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="w-full mt-1 text-sm text-gray-300 file:bg-red-600 file:border-none file:px-4 file:py-2 file:rounded-full file:text-white cursor-pointer"
-                  required
-                />
-              </div>
-
-              {/* Image Preview */}
-              {images.length > 0 && (
-                <div className="md:col-span-2 flex gap-3 flex-wrap">
-                  {images.map((img, index) => (
-                    <img
-                      key={index}
-                      src={URL.createObjectURL(img)}
-                      alt="preview"
-                      className="h-20 w-28 object-cover rounded-lg border border-gray-700"
-                    />
-                  ))}
-                </div>
-              )}
-
-              {/* Description */}
-              <div className="md:col-span-2">
-                <label className="text-sm text-gray-300">Description</label>
-                <textarea
-                  name="description"
-                  rows="4"
-                  value={formData.description}
-                  onChange={handleChange}
-                  className="w-full mt-1 px-4 py-3 rounded-xl bg-gray-800 focus:ring-2 focus:ring-red-600 outline-none"
-                />
-              </div>
-
-              {/* Buttons */}
-              <div className="md:col-span-2 flex gap-4 mt-4">
-                <button
-                  type="submit"
-                  className="flex-1 bg-green-600 hover:bg-green-700 py-3 rounded-full font-semibold transition"
-                >
-                  Submit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="flex-1 bg-gray-700 hover:bg-gray-600 py-3 rounded-full transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* Toast Message */}
-        {message && (
-          <div className="fixed bottom-6 bg-black/80 px-6 py-3 rounded-full shadow-xl">
-            {message}
-          </div>
-        )}
+  }
+  if (success)
+    return (
+      <section className="section closing">
+        <p className="eyebrow">A NEW CHAPTER BEGINS</p>
+        <h1>
+          Your car.
+          <br />
+          <em>Now in the collection.</em>
+        </h1>
+        <p>
+          Your listing has been saved. Manage it and read buyer enquiries in
+          your garage.
+        </p>
+        <div className="button-row">
+          <Link className="button" to="/account">
+            Open my garage ↗
+          </Link>
+          <Link className="underlink" to="/buy">
+            Explore the collection →
+          </Link>
+        </div>
       </section>
-    </div>
+    );
+  return (
+    <section className="section">
+      <div className="page-heading">
+        <p className="eyebrow">PASS ON THE POSSIBILITY</p>
+        <h1>
+          Great journeys
+          <br />
+          <em>deserve another chapter.</em>
+        </h1>
+        <p>Create your listing. Tell your story. Find your car’s next owner.</p>
+      </div>
+      <div className="valuation-layout">
+        <form className="form-panel" onSubmit={submit}>
+          <div className="panel-title">
+            <span className="step">01</span>
+            <div>
+              <h2>Introduce your car.</h2>
+              <p>The right details help the right buyer find you.</p>
+            </div>
+          </div>
+          <div className="form-grid">
+            <label className="span-2">
+              Make, model & variant
+              <input
+                name="car_name"
+                value={form.car_name}
+                onChange={update}
+                required
+                maxLength={120}
+                placeholder="e.g. Honda City V i-VTEC"
+              />
+            </label>
+            {[
+              [
+                "model",
+                "Registration year",
+                1980,
+                new Date().getFullYear(),
+                "2017",
+              ],
+              ["price", "Asking price (₹)", 10000, 100000000, "650000"],
+              ["kms_driven", "Distance driven (km)", 0, 2000000, "45000"],
+            ].map(([key, label, min, max, placeholder]) => (
+              <label key={key}>
+                {label}
+                <input
+                  name={key}
+                  type="number"
+                  value={form[key]}
+                  onChange={update}
+                  min={min}
+                  max={max}
+                  required
+                  placeholder={placeholder}
+                />
+              </label>
+            ))}
+            <label>
+              City
+              <input
+                name="city"
+                value={form.city}
+                onChange={update}
+                required
+                maxLength={80}
+                placeholder="e.g. Mumbai"
+              />
+            </label>
+            <label>
+              Fuel type
+              <select name="fuel_type" value={form.fuel_type} onChange={update}>
+                {["Petrol", "Diesel", "CNG", "LPG", "Electric"].map((value) => (
+                  <option key={value}>{value}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Transmission
+              <select
+                name="transmission"
+                value={form.transmission}
+                onChange={update}
+              >
+                <option>Manual</option>
+                <option>Automatic</option>
+              </select>
+            </label>
+            <label className="span-2">
+              The story so far
+              <textarea
+                name="description"
+                value={form.description}
+                onChange={update}
+                maxLength={2000}
+                rows={5}
+                placeholder="Tell buyers about its condition, service history, ownership and what makes it special."
+              />
+            </label>
+            <label className="span-2 upload-zone">
+              A closer look
+              <input
+                type="file"
+                multiple
+                accept="image/jpeg,image/png,image/webp"
+                required
+                onChange={photos}
+              />
+              <small>Up to 5 photos · JPG, PNG, WebP · 5 MB each</small>
+            </label>
+            {previews.length > 0 && (
+              <div className="photo-previews span-2">
+                {previews.map((src, index) => (
+                  <img
+                    key={src}
+                    src={src}
+                    alt={"Vehicle preview " + (index + 1)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+          {error && (
+            <p className="error" role="alert">
+              {error}
+            </p>
+          )}
+          <button className="button full-width" disabled={busy}>
+            {busy ? "Saving your listing…" : "Publish my listing ↗"}
+          </button>
+          <p className="fine-print">
+            Your listing becomes visible in the collection. Buyers can send
+            enquiries; your email is not displayed publicly.
+          </p>
+        </form>
+        <aside className="valuation-aside">
+          <p className="eyebrow">A CONSIDERED FIRST IMPRESSION</p>
+          <h2>
+            Every detail
+            <br />
+            tells a story.
+          </h2>
+          <ol className="selling-tips">
+            <li>
+              Photograph in natural light.
+              <p>Include the exterior, cabin and any wear.</p>
+            </li>
+            <li>
+              Be open about the history.
+              <p>Service records and honest details build confidence.</p>
+            </li>
+            <li>
+              Start with an informed price.
+              <p>A valuation gives you a useful starting point.</p>
+            </li>
+          </ol>
+          <Link className="underlink" to="/predict">
+            Get a car valuation ↗
+          </Link>
+        </aside>
+      </div>
+    </section>
   );
-};
-
-export default Sell;
+}

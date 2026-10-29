@@ -1,2 +1,10 @@
 node_modules/
-/.env
+**/.env
+**/.env.*
+!**/.env.example
+**/.venv/
+**/__pycache__/
+*.pyc
+.runtime/
+cars-backend/uploads/*
+!cars-backend/uploads/.gitkeep

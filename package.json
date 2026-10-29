@@ -1,0 +1,12 @@
+{
+  "name": "carlo-workspace",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/dev.cjs",
+    "dev:local": "node scripts/dev.cjs --local-db",
+    "build": "npm --prefix cars run build",
+    "lint": "npm --prefix cars run lint",
+    "test:api": "npm --prefix cars test",
+    "test:ml": "cars-backend/ml/.venv/Scripts/python.exe -m unittest discover -s cars-backend/ml -p test_pipeline.py -v"
+  }
+}
